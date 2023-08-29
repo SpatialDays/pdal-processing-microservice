@@ -1,0 +1,11 @@
+{
+  "pipeline": [
+    "/data/input_file.laz",
+    {
+      "type": "writers.gdal",
+      "filename": "output.tif",
+      "output_type": "mean",
+      "resolution": 0.25
+    }
+  ]
+}
