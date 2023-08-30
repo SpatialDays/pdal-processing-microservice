@@ -1,10 +1,13 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+import requests
 import json
 import subprocess
 from celery import Celery
 
 app = Flask(__name__)
+CORS(app)
 
 # Configure Celery
 app.config["CELERY_BROKER_URL"] = os.environ.get(
@@ -22,10 +25,17 @@ celery.conf.update(app.config)
 def pdal_info():
     data = request.get_json()
 
-    if "input_file" not in data:
+    if "input_file" not in data or "input_file_download_url" not in data:
         return jsonify({"error": "Missing required parameters."}), 400
 
-    input_file = data["input_file"]
+    input_file_download_url = data.get("input_file_download_url")
+    if input_file_download_url:
+        if not os.path.exists(f"./data/{data.get('input_file')}"):
+            response = requests.get(input_file_download_url)
+            with open(f"./data/{data.get('input_file')}", "wb") as f:
+                f.write(response.content)
+
+    input_file = data.get("input_file")
 
     cmd = ["pdal", "info", f"./data/{input_file}"]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
