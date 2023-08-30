@@ -18,6 +18,24 @@ celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
 celery.conf.update(app.config)
 
 
+@app.route("/pdal-info", methods=["POST"])
+def pdal_info():
+    data = request.get_json()
+
+    if "input_file" not in data:
+        return jsonify({"error": "Missing required parameters."}), 400
+
+    input_file = data["input_file"]
+
+    cmd = ["pdal", "info", f"./data/{input_file}"]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
+    stdout, stderr = process.communicate()
+
+    parsed = json.loads(stdout)
+    print(json.dumps(parsed, indent=4))
+    return jsonify({"message": stdout}), 200
+
+
 @app.route("/process-pdal", methods=["POST"])
 def process_pdal():
     data = request.get_json()
