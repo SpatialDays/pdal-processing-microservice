@@ -53,6 +53,12 @@ def process_pdal():
     if not all(k in data for k in ("input_file", "output_file", "resolution")):
         return jsonify({"error": "Missing required parameters."}), 400
 
+    if data.get("input_file_download_url"):
+        if not os.path.exists(f"./data/{data.get('input_file')}"):
+            response = requests.get(data.get("input_file_download_url"))
+            with open(f"./data/{data.get('input_file')}", "wb") as f:
+                f.write(response.content)
+
     input_file = data["input_file"]
     output_file = data["output_file"]
 
