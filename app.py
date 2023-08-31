@@ -46,8 +46,8 @@ def pdal_info():
     return jsonify({"message": stdout}), 200
 
 
-@app.route("/process-pdal", methods=["POST"])
-def process_pdal():
+@app.route("/rasterize-pc", methods=["POST"])
+def rasterize_pc():
     data = request.get_json()
 
     if not all(k in data for k in ("input_file", "output_file", "resolution")):
