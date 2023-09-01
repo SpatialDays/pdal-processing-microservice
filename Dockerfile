@@ -7,11 +7,12 @@ RUN apt-get update && apt-get install -y \
     pdal \
     && rm -rf /var/lib/apt/lists/*
 
-
 WORKDIR /app
-ADD . /app
+COPY requirements.txt /app
+RUN pip install -r requirements.txt
+COPY . /app
 
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
 
 EXPOSE 5000
 CMD ["python", "app.py"]
