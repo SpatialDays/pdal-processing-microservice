@@ -1,3 +1,5 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -5,6 +7,7 @@ import requests
 import json
 import subprocess
 from celery import Celery
+from blob_helper_utility import blob_mapping_utility
 
 app = Flask(__name__)
 CORS(app)
@@ -25,19 +28,13 @@ celery.conf.update(app.config)
 def pdal_info():
     data = request.get_json()
 
-    if "input_file" not in data or "input_file_download_url" not in data:
+    if "input_file" not in data:
         return jsonify({"error": "Missing required parameters."}), 400
 
-    input_file_download_url = data.get("input_file_download_url")
-    if input_file_download_url:
-        if not os.path.exists(f"./data/{data.get('input_file')}"):
-            response = requests.get(input_file_download_url)
-            with open(f"./data/{data.get('input_file')}", "wb") as f:
-                f.write(response.content)
-
-    input_file = data.get("input_file")
-
-    cmd = ["pdal", "info", f"./data/{input_file}"]
+    input_file_download_url = data.get("input_file")
+    blob_mapping_utility.download_blob(input_file_download_url)
+    input_file = blob_mapping_utility.get_mounted_filepath_from_url(input_file_download_url)
+    cmd = ["pdal", "info", input_file]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
     stdout, stderr = process.communicate()
 
@@ -84,6 +81,7 @@ def run_pdal_command(self, input_file, output_file, resolution):
     cmd = ["pdal", "pipeline", "-s"]
     process = subprocess.Popen(cmd, stdin=subprocess.PIPE, text=True)
     process.communicate(pipeline_str)
+    # clean up here
 
 
 def construct_pipeline(input_file, output_file, resolution):
