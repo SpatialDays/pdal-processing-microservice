@@ -32,7 +32,10 @@ See more details at: https://pypi.org/project/blob-mounting-helper-utility/
 ## Environment variables
 | Variable | Description | Default              |
 |----------|-------------|----------------------|
+|APP_HOST| Host of the server |
+|APP_PORT| Port of the server | 5000                 |
+|APP_DEBUG| Debug mode | True                 |
 | CELERY_BROKER_URL | URL of the broker | redis://redis:6379/0 |
 | CELERY_RESULT_BACKEND | URL of the backend | redis://redis:6379/0 |
 | AZURE_STORAGE_ACCOUNT_KEY| Azure storage account key | None                 |
-| BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH| Path to the JSON file containing the blob mounting configurations | None |
+| BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH| Path to the JSON file containing the blob mounting configurations | None                 |
