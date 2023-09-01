@@ -1,9 +1,9 @@
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
 import json
 import subprocess
 from celery import Celery
@@ -32,11 +32,15 @@ def pdal_info():
         return jsonify({"error": "Missing required parameters."}), 400
 
     input_file_download_url = data.get("input_file")
+    # remove sas token from input_file_download_url
+    if "?" in input_file_download_url:
+        input_file_download_url = input_file_download_url.split("?")[0]
     blob_mapping_utility.download_blob(input_file_download_url)
     input_file = blob_mapping_utility.get_mounted_filepath_from_url(input_file_download_url)
     cmd = ["pdal", "info", input_file]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
     stdout, stderr = process.communicate()
+    blob_mapping_utility.cleanup_files()
 
     parsed = json.loads(stdout)
     print(json.dumps(parsed, indent=4))
@@ -47,17 +51,10 @@ def pdal_info():
 def rasterize_pc():
     data = request.get_json()
 
-    if not all(k in data for k in ("input_file", "output_file", "resolution")):
+    if not all(k in data for k in ("input_file", "resolution")):
         return jsonify({"error": "Missing required parameters."}), 400
 
-    if data.get("input_file_download_url"):
-        if not os.path.exists(f"./data/{data.get('input_file')}"):
-            response = requests.get(data.get("input_file_download_url"))
-            with open(f"./data/{data.get('input_file')}", "wb") as f:
-                f.write(response.content)
-
     input_file = data["input_file"]
-    output_file = data["output_file"]
 
     try:
         resolution = float(data["resolution"])
@@ -65,7 +62,7 @@ def rasterize_pc():
         return jsonify({"error": "Resolution should be a number."}), 400
 
     # This will now dispatch the task to Celery asynchronously
-    task = run_pdal_command.delay(input_file, output_file, resolution)
+    task = run_pdal_command.delay(input_file, resolution)
     return jsonify({"message": "Task dispatched", "task_id": task.id}), 202
 
 
@@ -76,21 +73,28 @@ def check_task_status(task_id):
 
 
 @celery.task(bind=True)
-def run_pdal_command(self, input_file, output_file, resolution):
+def run_pdal_command(self, input_file, resolution):
+    if "?" in input_file:
+        input_file = input_file.split("?")[0]
+    blob_mapping_utility.download_blob(input_file)
+    input_file = blob_mapping_utility.get_mounted_filepath_from_url(input_file)
+    output_file = input_file.replace(".laz", ".tif")
     pipeline_str = construct_pipeline(input_file, output_file, resolution)
     cmd = ["pdal", "pipeline", "-s"]
     process = subprocess.Popen(cmd, stdin=subprocess.PIPE, text=True)
     process.communicate(pipeline_str)
-    # clean up here
+    blob_mapping_utility.upload_blob(output_file)
+    # cleanup here
+    blob_mapping_utility.cleanup_files()
 
 
 def construct_pipeline(input_file, output_file, resolution):
     pipeline = {
         "pipeline": [
-            f"/data/{input_file}",
+            f"{input_file}",
             {
                 "type": "writers.gdal",
-                "filename": f"/data/{output_file}",
+                "filename": f"{output_file}",
                 "output_type": "mean",
                 "resolution": resolution,
             },

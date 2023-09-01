@@ -1,21 +1,20 @@
 version: '3'
 
 services:
-  pdal:
-    image: pdal/pdal:latest
-    volumes:
-      - ./data:/data
   web:
     build: .
     command: flask run --host=0.0.0.0
-    volumes:
-      - .:/app
     ports:
       - "5000:5000"
     depends_on:
       - redis
     env_file:
       - .env
+    volumes:
+      - .:/app
+      - ./blob_mapping_config.json:/mnt/blob_mapping_config.json
+    environment:
+      - BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH=/mnt/blob_mapping_config.json
   redis:
     image: "redis:alpine"
   worker:
@@ -24,6 +23,9 @@ services:
     volumes:
       - .:/app
       - ./data:/data
+      - ./blob_mapping_config.json:/mnt/blob_mapping_config.json
+    environment:
+      - BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH=/mnt/blob_mapping_config.json
     depends_on:
       - redis
     env_file:

@@ -1,0 +1,10 @@
+{
+    "blob_mounting_configurations" : [
+      {
+        "storage_account_name" : "oseoinfrastagingstrgacc",
+        "storage_account_url" : "https://oseoinfrastagingstrgacc.blob.core.windows.net/",
+        "container_name" : "manual-upload-storage-container",
+        "mount_point" : "/tmp/manual-upload-storage-container"
+      }
+    ]
+  }
