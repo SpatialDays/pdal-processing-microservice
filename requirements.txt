@@ -3,7 +3,7 @@ azure-core==1.29.3
 azure-storage-blob==12.17.0
 billiard==3.6.4.0
 blob-mounting-helper-utility==1.1.4
-celery==5.0.5
+celery==5.2.2
 certifi==2023.7.22
 cffi==1.15.1
 charset-normalizer==3.2.0
