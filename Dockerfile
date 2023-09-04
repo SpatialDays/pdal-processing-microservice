@@ -1,11 +1,15 @@
-FROM pdal/pdal:sha-d0bb6358
+FROM ubuntu:jammy-20230816
+
+# Install utilities and PDAL
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    pdal \
+    && rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /app
 COPY requirements.txt /app
-RUN python3 -m pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 COPY . /app
-
-
-
-EXPOSE 5000
 CMD ["python3", "app.py"]
