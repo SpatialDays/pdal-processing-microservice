@@ -1,17 +1,11 @@
-FROM ubuntu:latest
-
-# Install utilities and PDAL
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    pdal \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM pdal/pdal:sha-d0bb6358
 
 WORKDIR /app
-ADD . /app
+COPY requirements.txt /app
+RUN pip install -r requirements.txt
+COPY . /app
 
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
 
 EXPOSE 5000
 CMD ["python", "app.py"]
