@@ -25,6 +25,7 @@ celery.conf.update(app.config)
 
 
 @app.route("/pdal-info", methods=["POST"])
+@app.route("/pdal-info/", methods=["POST"])
 def pdal_info():
     data = request.get_json()
 
@@ -48,6 +49,7 @@ def pdal_info():
 
 
 @app.route("/rasterize-pc", methods=["POST"])
+@app.route("/rasterize-pc/", methods=["POST"])
 def rasterize_pc():
     data = request.get_json()
 
