@@ -3,11 +3,11 @@ version: '3'
 services:
   web:
     build: .
-    command: flask run --host=0.0.0.0
+    # command: flask run --host=0.0.0.0
     ports:
       - "5000:5000"
-    depends_on:
-      - redis
+    # depends_on:
+    #   - redis
     env_file:
       - .env
     volumes:
@@ -15,18 +15,18 @@ services:
       - ./blob_mapping_config.json:/mnt/blob_mapping_config.json
     environment:
       - BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH=/mnt/blob_mapping_config.json
-  redis:
-    image: "redis:alpine"
-  worker:
-    build: .
-    command: celery -A app.celery worker --loglevel=info
-    volumes:
-      - .:/app
-      - ./data:/data
-      - ./blob_mapping_config.json:/mnt/blob_mapping_config.json
-    environment:
-      - BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH=/mnt/blob_mapping_config.json
-    depends_on:
-      - redis
-    env_file:
-      - .env
+  # redis:
+  #   image: "redis:alpine"
+  # worker:
+  #   build: .
+  #   command: celery -A app.celery worker --loglevel=info
+  #   volumes:
+  #     - .:/app
+  #     - ./data:/data
+  #     - ./blob_mapping_config.json:/mnt/blob_mapping_config.json
+  #   environment:
+  #     - BLOB_MOUNTING_CONFIGURATIONS_JSON_PATH=/mnt/blob_mapping_config.json
+  #   depends_on:
+  #     - redis
+  #   env_file:
+  #     - .env
